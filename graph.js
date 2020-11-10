@@ -14,14 +14,23 @@ class Graph {
     }
 
     draw() {
-        this.width = 500;
-        this.height = 500;
+        this.width = 1000;
+        this.height = 800;
+
         const svg = this.element.append('svg')
             .attr('width', this.width)
             .attr('height', this.height)
             .style("border", "solid 1px");
 
+        // add zoom behavior to whole svg
+        const zoom = d3.zoom()
+            .on('zoom', (event) => {
+                this.plot.attr('transform', event.transform);
+            });
+        svg.call(zoom);
+
         this.plot = svg.append('g');
+
         // circles need to be added last to be drawn above the paths
         this.paths = this.plot.append('g').classed('edges', true);
         this.circles = this.plot.append('g').classed('nodes', true);
@@ -37,7 +46,7 @@ class Graph {
             .enter()
             .append("g")
             .attr("class", "nodes")
-            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")";});
+            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; });
         // enter circles
         nodes.append("circle")
             .attr("r", "10px")
@@ -45,9 +54,9 @@ class Graph {
             .attr("fill", "white")
         // enter labels
         nodes.append("text")
-            .attr("text-anchor","middle")
+            .attr("text-anchor", "middle")
             .attr("dy", 5)
-            .text(d => { return d.title;});
+            .text(d => { return d.title; });
         // remove old groups
         nodes.exit().remove();
     }
