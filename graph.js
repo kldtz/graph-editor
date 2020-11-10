@@ -2,9 +2,11 @@ class Graph {
     constructor(opts) {
         this.nodes = opts.nodes;
         // map source and target id to respective node
+        var edgeId = 1;
         this.edges = opts.edges.map(
             e => {
                 return {
+                    id: edgeId++,
                     source: this.nodes.find(n => n.id == e.source),
                     target: this.nodes.find(n => n.id == e.target)
                 }
@@ -29,12 +31,28 @@ class Graph {
             });
         svg.call(zoom);
 
+        // drag behavior
+        const graph = this;
+        this.drag = d3.drag()
+            //.subject(d => { return { x: d.x, y: d.y } })
+            .on("drag", function (event, d) {
+                d.x = event.x;
+                d.y = event.y;
+                d3.select(this).raise().attr("transform", d => "translate(" + [d.x, d.y] + ")");
+                graph.addEdges();
+            });
+
+        // populate svg
         this.plot = svg.append('g');
 
         // circles need to be added last to be drawn above the paths
         this.paths = this.plot.append('g').classed('edges', true);
         this.circles = this.plot.append('g').classed('nodes', true);
 
+        this.update();
+    }
+
+    update() {
         this.addEdges();
         this.addNodes();
     }
@@ -46,7 +64,8 @@ class Graph {
             .enter()
             .append("g")
             .attr("class", "nodes")
-            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; });
+            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
+            .call(this.drag);
         // enter circles
         nodes.append("circle")
             .attr("r", "10px")
@@ -62,8 +81,13 @@ class Graph {
     }
 
     addEdges() {
-        this.paths.selectAll(".line")
+        this.paths.selectAll("path")
             .data(this.edges)
+            // update existing paths
+            .attr("d", d => {
+                return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+            })
+            // add new paths
             .enter()
             .append("path")
             .attr("d", d => {
