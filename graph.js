@@ -31,18 +31,25 @@ class Graph {
     }
 
     addNodes() {
-        this.circles.selectAll("circle .nodes")
+        // enter node groups
+        const nodes = this.circles.selectAll("g")
             .data(this.nodes)
             .enter()
-            .append("svg:circle")
+            .append("g")
             .attr("class", "nodes")
-            .attr("cx", d => { return d.x; })
-            .attr("cy", d => { return d.y; })
+            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")";});
+        // enter circles
+        nodes.append("circle")
             .attr("r", "10px")
             .attr("stroke", "black")
             .attr("fill", "white")
-            .exit()
-            .remove();
+        // enter labels
+        nodes.append("text")
+            .attr("text-anchor","middle")
+            .attr("dy", 5)
+            .text(d => { return d.title;});
+        // remove old groups
+        nodes.exit().remove();
     }
 
     addEdges() {
