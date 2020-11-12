@@ -12,6 +12,11 @@ class Graph {
                 }
             });
         this.element = opts.element;
+        this.state = {
+            mouseDownNode: null,
+            mouseOverNode: null,
+            shiftNodeDrag: false,
+        }
         this.draw();
     }
 
@@ -26,6 +31,7 @@ class Graph {
 
         // add zoom behavior to whole svg
         const zoom = d3.zoom()
+            .filter(event => { return !event.shiftKey; })
             .on('zoom', (event) => {
                 this.plot.attr('transform', event.transform);
             });
@@ -36,14 +42,28 @@ class Graph {
         this.drag = d3.drag()
             //.subject(d => { return { x: d.x, y: d.y } })
             .on("drag", function (event, d) {
-                d.x = event.x;
-                d.y = event.y;
-                d3.select(this).raise().attr("transform", d => "translate(" + [d.x, d.y] + ")");
-                graph.addEdges();
-            });
+                if (graph.state.shiftNodeDrag) {
+                    const pos = d3.pointer(event, graph.plot.node());
+                    graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + pos[0] + ',' + pos[1]);
+                } else {
+                    d.x = event.x;
+                    d.y = event.y;
+                    d3.select(this).raise().attr("transform", d => "translate(" + [d.x, d.y] + ")");
+                    graph.updateEdges();
+                }
+            })
+            .on("end", (event, d) => {
+                this.dragEnd(event, d);
+            })
+            ;
 
         // populate svg
         this.plot = svg.append('g');
+
+        // displayed when dragging between nodes
+        this.dragLine = this.plot.append('path')
+            .attr('class', 'hidden')
+            .attr('d', 'M0,0L0,0');
 
         // circles need to be added last to be drawn above the paths
         this.paths = this.plot.append('g').classed('edges', true);
@@ -53,11 +73,11 @@ class Graph {
     }
 
     update() {
-        this.addEdges();
-        this.addNodes();
+        this.updateEdges();
+        this.updateNodes();
     }
 
-    addNodes() {
+    updateNodes() {
         // enter node groups
         const nodes = this.circles.selectAll("g")
             .data(this.nodes)
@@ -65,7 +85,11 @@ class Graph {
             .append("g")
             .attr("class", "nodes")
             .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
-            .call(this.drag);
+            .on("mousedown", (event, d) => this.nodeMouseDown(event, d))
+            .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
+            .on("mouseout", () => { this.state.mouseOverNode = null; })
+            .call(this.drag)
+            ;
         // enter circles
         nodes.append("circle")
             .attr("r", "10px")
@@ -80,7 +104,39 @@ class Graph {
         nodes.exit().remove();
     }
 
-    addEdges() {
+    nodeMouseDown(event, d) {
+        event.stopPropagation();
+        this.state.mouseDownNode = d;
+        if (event.shiftKey) {
+            this.state.shiftNodeDrag = true;
+            this.dragLine.classed('hidden', false)
+                .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
+        }
+    }
+
+    dragEnd(event, d) {
+        this.state.shiftNodeDrag = false;
+        this.dragLine.classed("hidden", true);
+
+        const source = this.state.mouseDownNode;
+        const target = this.state.mouseOverNode;
+
+        if (!source || !target) return;
+
+        // source and target are different
+        if (source !== target) {
+            // remove edge between source and target (any order)
+            this.edges = this.edges.filter(edge => {
+                return !(edge.source === source && edge.target === target) &&
+                    !(edge.source === target && edge.target === source);
+            });
+            var newEdge = { source: source, target: target };
+            this.edges.push(newEdge);
+            this.updateEdges();
+        }
+    }
+
+    updateEdges() {
         this.paths.selectAll("path")
             .data(this.edges)
             // update existing paths
@@ -93,7 +149,6 @@ class Graph {
             .attr("d", d => {
                 return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
             })
-            .style("stroke", "red")
             .exit()
             .remove();
     }

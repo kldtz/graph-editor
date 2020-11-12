@@ -1,0 +1,8 @@
+path.hidden {
+    stroke-width: 0;
+    stroke: white;
+}
+
+path {
+    stroke: red;
+}
