@@ -1,6 +1,9 @@
 class Graph {
     constructor(opts) {
         this.nodes = opts.nodes;
+        this.nodeId = this.nodes.reduce((prev, curr) => {
+            return (prev.id > curr.id) ? prev.id : curr.id
+        });
         // map source and target id to respective node
         var edgeId = 1;
         this.edges = opts.edges.map(
@@ -33,7 +36,17 @@ class Graph {
             .on('zoom', (event) => {
                 this.plot.attr('transform', event.transform);
             });
-        svg.call(zoom);
+        // prepare SVG
+        svg
+            .on("mousedown", (event, d) => {
+                if (event.shiftKey) {
+                    const pos = d3.pointer(event, graph.plot.node())
+                    const node = { id: ++this.nodeId, title: this.nodeId.toString(), x: pos[0], y: pos[1] }
+                    this.nodes.push(node);
+                    this.updateNodes();
+                }
+            })
+            .call(zoom);
 
         // drag behavior
         const graph = this;
