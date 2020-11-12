@@ -30,7 +30,6 @@ class Graph {
 
         // add zoom behavior to whole svg
         const zoom = d3.zoom()
-            .filter(event => { return !event.shiftKey; })
             .on('zoom', (event) => {
                 this.plot.attr('transform', event.transform);
             });
