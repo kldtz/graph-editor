@@ -6,3 +6,13 @@ path.hidden {
 path {
     stroke: red;
 }
+
+circle {
+    stroke: black;
+    fill: white;
+    r: 10px;
+}
+
+text {
+    text-anchor: middle;
+}

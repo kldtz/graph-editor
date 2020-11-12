@@ -13,7 +13,6 @@ class Graph {
             });
         this.element = opts.element;
         this.state = {
-            mouseDownNode: null,
             mouseOverNode: null,
             shiftNodeDrag: false,
         }
@@ -91,13 +90,9 @@ class Graph {
             .call(this.drag)
             ;
         // enter circles
-        nodes.append("circle")
-            .attr("r", "10px")
-            .attr("stroke", "black")
-            .attr("fill", "white")
+        nodes.append("circle");
         // enter labels
         nodes.append("text")
-            .attr("text-anchor", "middle")
             .attr("dy", 5)
             .text(d => { return d.title; });
         // remove old groups
@@ -106,7 +101,6 @@ class Graph {
 
     nodeMouseDown(event, d) {
         event.stopPropagation();
-        this.state.mouseDownNode = d;
         if (event.shiftKey) {
             this.state.shiftNodeDrag = true;
             this.dragLine.classed('hidden', false)
@@ -114,11 +108,10 @@ class Graph {
         }
     }
 
-    dragEnd(event, d) {
+    dragEnd(event, source) {
         this.state.shiftNodeDrag = false;
         this.dragLine.classed("hidden", true);
 
-        const source = this.state.mouseDownNode;
         const target = this.state.mouseOverNode;
 
         if (!source || !target) return;
