@@ -10,9 +10,13 @@ path {
 circle {
     stroke: black;
     fill: white;
-    r: 10px;
+    r: 15px;
 }
 
 text {
     text-anchor: middle;
+}
+
+g.node:hover {
+    cursor: grab;
 }
