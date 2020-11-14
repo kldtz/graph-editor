@@ -38,11 +38,16 @@ class Graph {
                 case this.consts.BACKSPACE_KEY:
                 case this.consts.DELETE_KEY:
                     event.preventDefault();
-                    const selected = this.state.selectedNode;
-                    this.nodes = this.nodes.filter(node => { return selected !== node; });
-                    this.updateNodes();
-                    this.edges = this.edges.filter(edge => { return edge.source !== selected && edge.target !== selected; });
-                    this.updateEdges();
+                    if (this.state.selectedNode) {
+                        const selected = this.state.selectedNode;
+                        this.nodes = this.nodes.filter(node => { return selected !== node; });
+                        this.edges = this.edges.filter(edge => { return edge.source !== selected && edge.target !== selected; });
+                        this.update();
+                    } else if (this.state.selectedEdge) {
+                        const selected = this.state.selectedEdge;
+                        this.edges = this.edges.filter(edge => { return selected !== edge; });
+                        this.updateEdges();
+                    }
                     break;
             }
         });
