@@ -18,6 +18,7 @@ class Graph {
             mouseOverNode: null,
             shiftNodeDrag: false,
             selectedNode: null,
+            selectedEdge: null,
         }
         this.consts = {
             BACKSPACE_KEY: 8,
@@ -69,7 +70,8 @@ class Graph {
             })
             .on('click', () => {
                 this.state.selectedNode = null;
-                this.updateNodes();
+                this.state.selectedEdge = null;
+                this.update();
             })
             .call(zoom);
 
@@ -188,7 +190,8 @@ class Graph {
                         .on("click", (event, d) => {
                             event.stopPropagation();
                             this.state.selectedNode = d;
-                            this.updateNodes();
+                            this.state.selectedEdge = null;
+                            this.update();
                         })
                         .call(this.drag);
                     // enter circles
@@ -218,10 +221,17 @@ class Graph {
                     .attr("d", d => {
                         return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
                     })
+                    .on("click", (event, d) => {
+                        event.stopPropagation();
+                        this.state.selectedEdge = d;
+                        this.state.selectedNode = null;
+                        this.update();
+                    })
                     .style('marker-end', 'url(#end-arrow)'),
                 update => update.attr("d", d => {
                     return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
-                }),
+                })
+                    .classed("selected", d => { return d === this.state.selectedEdge; }),
                 exit => exit.remove()
             );
     }

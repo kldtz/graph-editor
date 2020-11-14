@@ -29,3 +29,7 @@ marker{
 g.node.selected > circle{
     fill: orange;
 }
+
+path.selected {
+    stroke: orange;
+}
