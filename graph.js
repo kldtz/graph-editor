@@ -240,9 +240,15 @@ class Graph {
                 exit => exit.remove()
             );
     }
+
+    clear() {
+        this.nodes = []
+        this.edges = []
+        this.update();
+    }
 }
 
-const chart = new Graph({
+const graph = new Graph({
     element: d3.select("#graph"),
     nodes: [{ id: 1, title: "A", x: 250, y: 150 },
     { id: 2, title: "B", x: 800, y: 500 },
@@ -252,3 +258,7 @@ const chart = new Graph({
         { source: 2, target: 3 }
     ]
 })
+
+d3.select("#delete-graph").on("click", function () {
+    graph.clear();
+});
