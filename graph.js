@@ -31,6 +31,20 @@ class Graph {
         this.width = 1000;
         this.height = 800;
 
+        d3.select(window).on("keydown", (event) => {
+            switch (event.keyCode) {
+                case this.consts.BACKSPACE_KEY:
+                case this.consts.DELETE_KEY:
+                    event.preventDefault();
+                    const selected = this.state.selectedNode;
+                    this.nodes = this.nodes.filter(node => { return selected !== node; });
+                    this.updateNodes();
+                    this.edges = this.edges.filter(edge => { return edge.source !== selected && edge.target !== selected; });
+                    this.updateEdges();
+                    break;
+            }
+        });
+
         const svg = this.element.append('svg')
             .attr('width', this.width)
             .attr('height', this.height)
@@ -49,19 +63,6 @@ class Graph {
                     const node = { id: ++this.nodeId, title: this.nodeId.toString(), x: pos[0], y: pos[1] }
                     this.nodes.push(node);
                     this.updateNodes();
-                }
-            })
-            .on("keydown", (event, d) => {
-                console.log("Keydown");
-                switch (event.keyCode) {
-                    case this.consts.BACKSPACE_KEY:
-                    case this.consts.DELETE_KEY:
-                        event.preventDefault();
-                        this.nodes = this.nodes.filter(node => { return this.state.selectedNode !== node; });
-                        this.updateNodes();
-                        this.edges = this.edges.filter(edge => { return edge.source !== this.state.selectedNode && this.edge.target !== this.state.selectedNode; });
-                        this.updateEdges();
-                        break;
                 }
             })
             .call(zoom);
@@ -163,31 +164,35 @@ class Graph {
         // enter node groups
         const nodes = this.circles.selectAll("g")
             .data(this.nodes, d => { return d.id; })
-            .enter()
-            .append("g")
-            .attr("class", "node")
-            .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
-            .on("mousedown", (event, d) => {
-                event.stopPropagation();
-                if (event.shiftKey) {
-                    this.state.shiftNodeDrag = true;
-                    this.dragLine.classed('hidden', false)
-                        .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
-                }
-            })
-            .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
-            .on("mouseout", () => { this.state.mouseOverNode = null; })
-            .call(this.drag)
-            ;
-        // enter circles
-        nodes.append("circle")
-            .attr("r", String(this.consts.NODE_RADIUS));
-        // enter labels
-        nodes.append("text")
-            .attr("dy", 5)
-            .text(d => { return d.title; });
-        // remove old groups
-        nodes.exit().remove();
+            .join(
+                enter => {
+                    const nodes = enter.append("g")
+                        .attr("class", "node")
+                        .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
+                        .on("mousedown", (event, d) => {
+                            event.stopPropagation();
+                            if (event.shiftKey) {
+                                this.state.shiftNodeDrag = true;
+                                this.dragLine.classed('hidden', false)
+                                    .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
+                            }
+                        })
+                        .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
+                        .on("mouseout", () => { this.state.mouseOverNode = null; })
+                        .call(this.drag);
+                    // enter circles
+                    nodes.append("circle")
+                        .attr("r", String(this.consts.NODE_RADIUS));
+                    // enter labels
+                    nodes.append("text")
+                        .attr("dy", 5)
+                        .text(d => { return d.title; });
+                },
+                update => {
+                    update.attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
+                },
+                exit => exit.remove()
+            );
     }
 
     updateEdges() {
