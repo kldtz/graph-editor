@@ -123,6 +123,7 @@ class Graph {
 
                 const target = this.state.mouseOverNode;
                 this.state.selectedNode = target;
+                this.updateNodes();
 
                 if (!source || !target) return;
 
@@ -190,6 +191,7 @@ class Graph {
                 },
                 update => {
                     update.attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
+                        .classed("selected", d => { return d === this.state.selectedNode; })
                 },
                 exit => exit.remove()
             );

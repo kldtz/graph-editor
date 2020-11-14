@@ -25,3 +25,7 @@ g.node:hover {
 marker{
     fill: black;
 }
+
+g.node.selected > circle{
+    fill: orange;
+}
