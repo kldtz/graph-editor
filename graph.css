@@ -1,16 +1,17 @@
-path.hidden {
+path.edge.hidden {
     stroke-width: 0;
     stroke: white;
 }
 
-path {
-    stroke: red;
+path.edge {
+    stroke: black;
+    stroke-width: 6px;
 }
 
 circle {
     stroke: black;
     fill: white;
-    r: 15px;
+    stroke-width: 2px;
 }
 
 text {
@@ -19,4 +20,8 @@ text {
 
 g.node:hover {
     cursor: grab;
+}
+
+marker{
+    fill: black;
 }

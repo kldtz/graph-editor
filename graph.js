@@ -20,7 +20,9 @@ class Graph {
             selectedNode: null,
         }
         this.consts = {
+            BACKSPACE_KEY: 8,
             DELETE_KEY: 46,
+            NODE_RADIUS: 50,
         }
         this.draw();
     }
@@ -49,19 +51,44 @@ class Graph {
                     this.updateNodes();
                 }
             })
-            // .on("keydown", (event, d) => {
-            //     console.log("Keydown");
-            //     switch (event.keyCode) {
-            //         case this.consts.DELETE_KEY:
-            //             event.preventDefault();
-            //             this.nodes = this.nodes.filter(node => { return this.state.selectedNode !== node; });
-            //             this.updateNodes();
-            //             this.edges = this.edges.filter(edge => { return edge.source !== this.state.selectedNode && this.edge.target !== this.state.selectedNode; });
-            //             this.updateEdges();
-            //             break;
-            //     }
-            // })
+            .on("keydown", (event, d) => {
+                console.log("Keydown");
+                switch (event.keyCode) {
+                    case this.consts.BACKSPACE_KEY:
+                    case this.consts.DELETE_KEY:
+                        event.preventDefault();
+                        this.nodes = this.nodes.filter(node => { return this.state.selectedNode !== node; });
+                        this.updateNodes();
+                        this.edges = this.edges.filter(edge => { return edge.source !== this.state.selectedNode && this.edge.target !== this.state.selectedNode; });
+                        this.updateEdges();
+                        break;
+                }
+            })
             .call(zoom);
+
+        // define objects for later use
+        const defs = svg.append('defs');
+        // arrow marker for graph links
+        defs.append('marker')
+            .attr('id', 'end-arrow')
+            .attr('viewBox', '-10 -5 10 10')
+            .attr('refX', 22)
+            .attr('markerWidth', 3.5)
+            .attr('markerHeight', 3.5)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M-10,-5L0,0L-10,5');
+        // arrow marker for leading arrow
+        defs.append('marker')
+            .attr('id', 'mark-end-arrow')
+            .attr('viewBox', '-10 -5 10 10')
+            // should appear at the tip of the line
+            .attr('refX', 0)
+            .attr('markerWidth', 3.5)
+            .attr('markerHeight', 3.5)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M-10,-5L0,0L-10,5');
 
         // drag behavior
         const graph = this;
@@ -87,8 +114,10 @@ class Graph {
 
         // displayed when dragging between nodes
         this.dragLine = this.plot.append('path')
-            .attr('class', 'hidden')
-            .attr('d', 'M0,0L0,0');
+            .classed('edge', true)
+            .classed('hidden', true)
+            .attr('d', 'M0,0L0,0')
+            .style('marker-end', 'url(#mark-end-arrow)');
 
         // circles need to be added last to be drawn above the paths
         this.paths = this.plot.append('g').classed('edges', true);
@@ -117,7 +146,8 @@ class Graph {
             .call(this.drag)
             ;
         // enter circles
-        nodes.append("circle");
+        nodes.append("circle")
+            .attr("r", String(this.consts.NODE_RADIUS));
         // enter labels
         nodes.append("text")
             .attr("dy", 5)
@@ -159,15 +189,17 @@ class Graph {
     }
 
     updateEdges() {
-        this.paths.selectAll("path")
+        this.paths.selectAll(".edge")
             .data(this.edges, d => {
                 return String(d.source.id) + "+" + String(d.target.id);
             })
             .join(
                 enter => enter.append("path")
+                    .classed("edge", true)
                     .attr("d", d => {
                         return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
-                    }),
+                    })
+                    .style('marker-end', 'url(#end-arrow)'),
                 update => update.attr("d", d => {
                     return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
                 }),
@@ -179,8 +211,8 @@ class Graph {
 const chart = new Graph({
     element: d3.select("#graph"),
     nodes: [{ id: 1, title: "A", x: 250, y: 150 },
-    { id: 2, title: "B", x: 400, y: 250 },
-    { id: 3, title: "C", x: 200, y: 300 }],
+    { id: 2, title: "B", x: 800, y: 500 },
+    { id: 3, title: "C", x: 200, y: 700 }],
     edges: [
         { source: 1, target: 2 },
         { source: 2, target: 3 }
