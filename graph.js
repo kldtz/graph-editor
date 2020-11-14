@@ -71,28 +71,39 @@ class Graph {
         // arrow marker for graph links
         defs.append('marker')
             .attr('id', 'end-arrow')
-            .attr('viewBox', '-10 -5 10 10')
-            .attr('refX', 22)
-            .attr('markerWidth', 3.5)
-            .attr('markerHeight', 3.5)
+            // keep same scale
+            .attr('markerUnits', 'userSpaceOnUse')
+            .attr('viewBox', '-20 -10 20 20')
+            .attr('markerWidth', 20)
+            .attr('markerHeight', 20)
+            // tip of marker at circle (cut off part of tip that is thinner than line)
+            .attr('refX', this.consts.NODE_RADIUS - 3)
             .attr('orient', 'auto')
             .append('path')
-            .attr('d', 'M-10,-5L0,0L-10,5');
+            .attr('d', 'M-20,-10L0,0L-20,10');
         // arrow marker for leading arrow
         defs.append('marker')
             .attr('id', 'mark-end-arrow')
-            .attr('viewBox', '-10 -5 10 10')
-            // should appear at the tip of the line
+            // keep same scale
+            .attr('markerUnits', 'userSpaceOnUse')
+            .attr('viewBox', '-20 -10 20 20')
+            .attr('markerWidth', 20)
+            .attr('markerHeight', 20)
+            // tip of marker at end of line
             .attr('refX', 0)
-            .attr('markerWidth', 3.5)
-            .attr('markerHeight', 3.5)
             .attr('orient', 'auto')
             .append('path')
-            .attr('d', 'M-10,-5L0,0L-10,5');
+            .attr('d', 'M-20,-10L0,0L-20,10');
 
         // drag behavior
         const graph = this;
         this.drag = d3.drag()
+            .on("start", (event, d) => {
+                if (graph.state.shiftNodeDrag) {
+                    // add arrow tip
+                    graph.dragLine.style('marker-end', 'url(#mark-end-arrow)');
+                }
+            })
             .on("drag", function (event, d) {
                 if (graph.state.shiftNodeDrag) {
                     const pos = d3.pointer(event, graph.plot.node());
@@ -116,8 +127,7 @@ class Graph {
         this.dragLine = this.plot.append('path')
             .classed('edge', true)
             .classed('hidden', true)
-            .attr('d', 'M0,0L0,0')
-            .style('marker-end', 'url(#mark-end-arrow)');
+            .attr('d', 'M0,0L0,0');
 
         // circles need to be added last to be drawn above the paths
         this.paths = this.plot.append('g').classed('edges', true);
@@ -140,7 +150,6 @@ class Graph {
             .attr("class", "node")
             .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
             .on("mousedown", (event, d) => this.nodeMouseDown(event, d))
-            .on("mouseup", (event, d) => { console.log("MOUSEUP"); })
             .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
             .on("mouseout", () => { this.state.mouseOverNode = null; })
             .call(this.drag)
@@ -168,7 +177,8 @@ class Graph {
     //TODO: try to do node selection here (since mouseup doesn't work)
     dragEnd(event, source) {
         this.state.shiftNodeDrag = false;
-        this.dragLine.classed("hidden", true);
+        // hide line, remove arrow tip
+        this.dragLine.classed("hidden", true).style("marker-end", "none");
 
         const target = this.state.mouseOverNode;
         this.state.selectedNode = target;
