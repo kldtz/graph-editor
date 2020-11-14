@@ -23,6 +23,7 @@ class Graph {
             BACKSPACE_KEY: 8,
             DELETE_KEY: 46,
             NODE_RADIUS: 50,
+            CLICK_DISTANCE: 5,
         }
         this.draw();
     }
@@ -52,6 +53,7 @@ class Graph {
 
         // add zoom behavior to whole svg
         const zoom = d3.zoom()
+            .clickDistance(this.consts.CLICK_DISTANCE)
             .on('zoom', (event) => {
                 this.plot.attr('transform', event.transform);
             });
@@ -64,6 +66,10 @@ class Graph {
                     this.nodes.push(node);
                     this.updateNodes();
                 }
+            })
+            .on('click', () => {
+                this.state.selectedNode = null;
+                this.updateNodes();
             })
             .call(zoom);
 
@@ -99,6 +105,7 @@ class Graph {
         // drag behavior
         const graph = this;
         this.drag = d3.drag()
+            .clickDistance(this.consts.CLICK_DISTANCE)
             .on("start", (event, d) => {
                 if (graph.state.shiftNodeDrag) {
                     // add arrow tip
@@ -122,8 +129,6 @@ class Graph {
                 this.dragLine.classed("hidden", true).style("marker-end", "none");
 
                 const target = this.state.mouseOverNode;
-                this.state.selectedNode = target;
-                this.updateNodes();
 
                 if (!source || !target) return;
 
@@ -180,6 +185,11 @@ class Graph {
                         })
                         .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
                         .on("mouseout", () => { this.state.mouseOverNode = null; })
+                        .on("click", (event, d) => {
+                            event.stopPropagation();
+                            this.state.selectedNode = d;
+                            this.updateNodes();
+                        })
                         .call(this.drag);
                     // enter circles
                     nodes.append("circle")
