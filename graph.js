@@ -242,9 +242,19 @@ class Graph {
     }
 
     clear() {
-        this.nodes = []
-        this.edges = []
-        this.update();
+        const doDelete = window.confirm("Do you really want to delete the whole graph?");
+        if (doDelete) {
+            this.nodes = []
+            this.edges = []
+            this.update();
+        }
+    }
+
+    serialize() {
+        const saveEdges = this.edges.map(edge => {
+            return { source: edge.source.id, target: edge.target.id };
+        });
+        return new window.Blob([window.JSON.stringify({ "nodes": this.nodes, "edges": saveEdges })], { type: "text/plain;charset=utf-8" });
     }
 }
 
@@ -261,4 +271,8 @@ const graph = new Graph({
 
 d3.select("#delete-graph").on("click", function () {
     graph.clear();
+});
+
+d3.select("#download-input").on("click", function () {
+    saveAs(graph.serialize(), "dag-download.json");
 });
