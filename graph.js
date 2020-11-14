@@ -115,10 +115,28 @@ class Graph {
                     graph.updateEdges();
                 }
             })
-            .on("end", (event, d) => {
-                this.dragEnd(event, d);
-            })
-            ;
+            .on("end", (event, source) => {
+                this.state.shiftNodeDrag = false;
+                // hide line, remove arrow tip
+                this.dragLine.classed("hidden", true).style("marker-end", "none");
+
+                const target = this.state.mouseOverNode;
+                this.state.selectedNode = target;
+
+                if (!source || !target) return;
+
+                // source and target are different
+                if (source !== target) {
+                    // remove edge between source and target (any order)
+                    this.edges = this.edges.filter(edge => {
+                        return !(edge.source === source && edge.target === target) &&
+                            !(edge.source === target && edge.target === source);
+                    });
+                    var newEdge = { source: source, target: target };
+                    this.edges.push(newEdge);
+                    this.updateEdges();
+                }
+            });
 
         // populate svg
         this.plot = svg.append('g');
@@ -149,7 +167,14 @@ class Graph {
             .append("g")
             .attr("class", "node")
             .attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
-            .on("mousedown", (event, d) => this.nodeMouseDown(event, d))
+            .on("mousedown", (event, d) => {
+                event.stopPropagation();
+                if (event.shiftKey) {
+                    this.state.shiftNodeDrag = true;
+                    this.dragLine.classed('hidden', false)
+                        .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
+                }
+            })
             .on("mouseover", (event, d) => { this.state.mouseOverNode = d; })
             .on("mouseout", () => { this.state.mouseOverNode = null; })
             .call(this.drag)
@@ -163,39 +188,6 @@ class Graph {
             .text(d => { return d.title; });
         // remove old groups
         nodes.exit().remove();
-    }
-
-    nodeMouseDown(event, d) {
-        event.stopPropagation();
-        if (event.shiftKey) {
-            this.state.shiftNodeDrag = true;
-            this.dragLine.classed('hidden', false)
-                .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
-        }
-    }
-
-    //TODO: try to do node selection here (since mouseup doesn't work)
-    dragEnd(event, source) {
-        this.state.shiftNodeDrag = false;
-        // hide line, remove arrow tip
-        this.dragLine.classed("hidden", true).style("marker-end", "none");
-
-        const target = this.state.mouseOverNode;
-        this.state.selectedNode = target;
-
-        if (!source || !target) return;
-
-        // source and target are different
-        if (source !== target) {
-            // remove edge between source and target (any order)
-            this.edges = this.edges.filter(edge => {
-                return !(edge.source === source && edge.target === target) &&
-                    !(edge.source === target && edge.target === source);
-            });
-            var newEdge = { source: source, target: target };
-            this.edges.push(newEdge);
-            this.updateEdges();
-        }
     }
 
     updateEdges() {
