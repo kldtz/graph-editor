@@ -97,7 +97,7 @@ path.edge.dragline:hover {
     cursor: pointer;
 }
 
-#hidden-file-upload {
+#select-file {
     display: none;
 }
 

@@ -5,14 +5,7 @@ class Graph {
         this.nodeId = this.nodes.reduce((prev, curr) => {
             return (prev.id > curr.id) ? prev.id : curr.id
         });
-        // map source and target id to respective node
-        this.edges = opts.edges.map(
-            e => {
-                return {
-                    source: this.nodes.find(n => n.id == e.source),
-                    target: this.nodes.find(n => n.id == e.target)
-                }
-            });
+        this.setEdges(opts.edges)
         this.element = opts.element;
         this.state = {
             mouseOverNode: null,
@@ -27,6 +20,16 @@ class Graph {
             CLICK_DISTANCE: 5,
         }
         this.draw();
+    }
+
+    setEdges(edges) {
+        // map source and target id to respective node
+        this.edges = edges.map(e => {
+            return {
+                source: this.nodes.find(n => n.id == e.source),
+                target: this.nodes.find(n => n.id == e.target)
+            }
+        });
     }
 
     draw() {
@@ -210,17 +213,20 @@ class Graph {
                             this.update();
                         })
                         .call(this.drag);
-                    // enter circles
+
                     nodes.append("circle")
                         .attr("r", String(this.consts.NODE_RADIUS));
-                    // enter labels
+
                     nodes.append("text")
                         .attr("dy", 5)
                         .text(d => { return d.title; });
                 },
                 update => {
                     update.attr("transform", d => { return "translate(" + d.x + "," + d.y + ")"; })
-                        .classed("selected", d => { return d === this.state.selectedNode; })
+                        .classed("selected", d => { return d === this.state.selectedNode; });
+
+                    update.select("text")
+                        .text(d => { return d.title; });
                 },
                 exit => exit.remove()
             );
@@ -260,6 +266,15 @@ class Graph {
         }
     }
 
+    load(nodes, edges) {
+        this.nodeId = nodes.reduce(function (prev, curr) {
+            return (prev.id > curr.id) ? prev.id : curr.id
+        });
+        this.nodes = nodes;
+        this.setEdges(edges);
+        this.update();
+    }
+
     serialize() {
         const saveEdges = this.edges.map(edge => {
             return { source: edge.source.id, target: edge.target.id };
@@ -267,6 +282,8 @@ class Graph {
         return new window.Blob([window.JSON.stringify({ "nodes": this.nodes, "edges": saveEdges })], { type: "text/plain;charset=utf-8" });
     }
 }
+
+/* Main */
 
 const graph = new Graph({
     element: d3.select("#graph"),
@@ -285,4 +302,30 @@ d3.select("#delete-graph").on("click", () => {
 
 d3.select("#download-input").on("click", () => {
     saveAs(graph.serialize(), "dag-download.json");
+});
+
+
+d3.select("#upload-input").on("click", function () {
+    document.getElementById("select-file").click();
+});
+
+d3.select("#select-file").on("change", function () {
+    var files = document.getElementById('select-file').files;
+    if (files.length <= 0) {
+        return false;
+    }
+
+    var fr = new FileReader();
+
+    fr.onload = function (e) {
+        try{
+        const result = JSON.parse(e.target.result);
+        graph.load(result.nodes, result.edges);
+        } catch(err) {
+            window.alert("Error loading graph from file!\nError message: " + err.message);
+            return;
+        }
+    }
+
+    fr.readAsText(files.item(0));
 });
