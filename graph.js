@@ -176,7 +176,7 @@ class Graph {
             .attr('markerWidth', 20)
             .attr('markerHeight', 20)
             // tip of marker at end of line
-            .attr('refX', 0)
+            .attr('refX', -5)
             .attr('orient', 'auto')
             .append('path')
             .attr('d', 'M-20,-10L0,0L-20,10');
@@ -318,10 +318,10 @@ d3.select("#select-file").on("change", function () {
     var fr = new FileReader();
 
     fr.onload = function (e) {
-        try{
-        const result = JSON.parse(e.target.result);
-        graph.load(result.nodes, result.edges);
-        } catch(err) {
+        try {
+            const result = JSON.parse(e.target.result);
+            graph.load(result.nodes, result.edges);
+        } catch (err) {
             window.alert("Error loading graph from file!\nError message: " + err.message);
             return;
         }
