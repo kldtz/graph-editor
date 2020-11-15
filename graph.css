@@ -26,6 +26,10 @@ g.node:hover > circle {
     fill: orange;
 }
 
+text.hidden {
+    display: none;
+}
+
 /* Edges */
 
 path.edge.hidden {

@@ -18,6 +18,7 @@ class Graph {
             DELETE_KEY: 46,
             NODE_RADIUS: 50,
             CLICK_DISTANCE: 5,
+            ENTER_KEY: 13,
         }
         this.draw();
     }
@@ -40,13 +41,14 @@ class Graph {
             switch (event.keyCode) {
                 case this.consts.BACKSPACE_KEY:
                 case this.consts.DELETE_KEY:
-                    event.preventDefault();
                     if (this.state.selectedNode) {
+                        event.preventDefault();
                         const selected = this.state.selectedNode;
                         this.nodes = this.nodes.filter(node => { return selected !== node; });
                         this.edges = this.edges.filter(edge => { return edge.source !== selected && edge.target !== selected; });
                         this.update();
                     } else if (this.state.selectedEdge) {
+                        event.preventDefault();
                         const selected = this.state.selectedEdge;
                         this.edges = this.edges.filter(edge => { return selected !== edge; });
                         this.updateEdges();
@@ -208,9 +210,13 @@ class Graph {
                         .on("mouseout", () => { this.state.mouseOverNode = null; })
                         .on("click", (event, d) => {
                             event.stopPropagation();
-                            this.state.selectedNode = d;
-                            this.state.selectedEdge = null;
-                            this.update();
+                            if (event.shiftKey) {
+                                this.editNodeLabel(d);
+                            } else {
+                                this.state.selectedNode = d;
+                                this.state.selectedEdge = null;
+                                this.update();
+                            }
                         })
                         .call(this.drag);
 
@@ -230,6 +236,45 @@ class Graph {
                 },
                 exit => exit.remove()
             );
+    }
+
+    editNodeLabel(d) {
+        const selection = this.circles.selectAll('g').filter(function (dval) {
+            return dval.id === d.id;
+        });
+        // hide current label
+        const text = selection.selectAll("text").classed("hidden", true);
+        // add intermediate editable paragraph
+        const d3txt = this.plot.selectAll("foreignObject")
+            .data([d])
+            .enter()
+            .append("foreignObject")
+            .attr("x", d.x - this.consts.NODE_RADIUS)
+            .attr("y", d.y - 13)
+            .attr("height", 2 * this.consts.NODE_RADIUS)
+            .attr("width", 2 * this.consts.NODE_RADIUS)
+            .append("xhtml:div")
+            .attr("id", "editable-p")
+            .attr("contentEditable", "true")
+            .style("text-align", "center")
+            //.style("border", "1px solid")
+            .text(d.title)
+            .on("mousedown", (event, d) => {
+                event.stopPropagation();
+            })
+            .on("keydown", (event, d) => {
+                event.stopPropagation();
+                if (event.keyCode == this.consts.ENTER_KEY) {
+                    event.target.blur();
+                }
+            })
+            .on("blur", (event, d) => {
+                d.title = event.target.textContent;
+                d3.select(event.target.parentElement).remove();
+                this.updateNodes();
+                text.classed("hidden", false);
+            });
+        d3txt.node().focus();
     }
 
     updateEdges() {
