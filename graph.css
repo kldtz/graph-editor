@@ -1,3 +1,33 @@
+/* Nodes */
+
+g.node > circle {
+    stroke: black;
+    fill: white;
+    stroke-width: 2px;
+}
+
+g.node > text {
+    text-anchor: middle;
+}
+
+g.node:hover {
+    cursor: grab;
+}
+
+g.node.selected>circle {
+    fill: orange;
+}
+
+g.node.selected > marker {
+    fill: orange;
+}
+
+g.node:hover > circle {
+    fill: orange;
+}
+
+/* Edges */
+
 path.edge.hidden {
     stroke-width: 0;
     stroke: white;
@@ -6,32 +36,41 @@ path.edge.hidden {
 path.edge {
     stroke: black;
     stroke-width: 6px;
+    marker-end: url("#end-arrow")
 }
 
-circle {
-    stroke: black;
-    fill: white;
-    stroke-width: 2px;
-}
-
-text {
-    text-anchor: middle;
-}
-
-g.node:hover {
-    cursor: grab;
+path.edge.selected {
+    stroke: orange;
+    marker-end: url("#selected-end-arrow");
 }
 
 marker {
     fill: black;
 }
 
-g.node.selected>circle {
+#selected-end-arrow {
     fill: orange;
 }
 
-path.selected {
+path.edge:hover {
+    marker-end: url("#selected-end-arrow");
     stroke: orange;
+    cursor: pointer;
+}
+
+/* Intermediate edge during drag */
+
+path.edge.dragline {
+    marker-end: url("#mark-end-arrow");
+}
+
+path.edge.dragline.hidden {
+    marker-end: none;
+}
+
+path.edge.dragline:hover {
+    stroke: black;
+    cursor: pointer;
 }
 
 /* Toolbar */

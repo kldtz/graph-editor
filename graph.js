@@ -52,7 +52,7 @@ class Graph {
             }
         });
 
-        const svg = this.element.append('svg')
+        this.svg = this.element.append('svg')
             .attr('width', this.width)
             .attr('height', this.height)
             .style("border", "solid 1px");
@@ -64,7 +64,7 @@ class Graph {
                 this.plot.attr('transform', event.transform);
             });
         // prepare SVG
-        svg
+        this.svg
             .on("mousedown", (event, d) => {
                 if (event.shiftKey) {
                     const pos = d3.pointer(event, graph.plot.node())
@@ -80,11 +80,80 @@ class Graph {
             })
             .call(zoom);
 
-        // define objects for later use
-        const defs = svg.append('defs');
-        // arrow marker for graph links
+        this.defineMarkers();
+
+        // drag behavior
+        const graph = this;
+        this.drag = d3.drag()
+            .clickDistance(this.consts.CLICK_DISTANCE)
+            .on("drag", function (event, d) {
+                if (graph.state.shiftNodeDrag) {
+                    const pos = d3.pointer(event, graph.plot.node());
+                    graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + pos[0] + ',' + pos[1]);
+                } else {
+                    d.x = event.x;
+                    d.y = event.y;
+                    d3.select(this).raise().attr("transform", d => "translate(" + [d.x, d.y] + ")");
+                    graph.updateEdges();
+                }
+            })
+            .on("end", (event, source) => {
+                this.state.shiftNodeDrag = false;
+                // hide line, remove arrow tip
+                this.dragLine.classed("hidden", true);
+
+                const target = this.state.mouseOverNode;
+
+                if (!source || !target) return;
+
+                // source and target are different
+                if (source !== target) {
+                    // remove edge between source and target (any order)
+                    this.edges = this.edges.filter(edge => {
+                        return !(edge.source === source && edge.target === target) &&
+                            !(edge.source === target && edge.target === source);
+                    });
+                    var newEdge = { source: source, target: target };
+                    this.edges.push(newEdge);
+                    this.updateEdges();
+                }
+            });
+
+        // populate svg
+        this.plot = this.svg.append('g');
+
+        // displayed when dragging between nodes
+        this.dragLine = this.plot.append('path')
+            .classed('edge', true)
+            .classed('dragline', true)
+            .classed('hidden', true)
+            .attr('d', 'M0,0L0,0');
+
+        // circles need to be added last to be drawn above the paths
+        this.paths = this.plot.append('g').classed('edges', true);
+        this.circles = this.plot.append('g').classed('nodes', true);
+
+        this.update();
+    }
+
+    defineMarkers() {
+        const defs = this.svg.append('defs');
+        // arrow marker for edge
         defs.append('marker')
             .attr('id', 'end-arrow')
+            // keep same scale
+            .attr('markerUnits', 'userSpaceOnUse')
+            .attr('viewBox', '-20 -10 20 20')
+            .attr('markerWidth', 20)
+            .attr('markerHeight', 20)
+            // tip of marker at circle (cut off part of tip that is thinner than line)
+            .attr('refX', this.consts.NODE_RADIUS - 3)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M-20,-10L0,0L-20,10');
+        // arrow marker for selected edge (to allow separate CSS styling)
+        defs.append('marker')
+            .attr('id', 'selected-end-arrow')
             // keep same scale
             .attr('markerUnits', 'userSpaceOnUse')
             .attr('viewBox', '-20 -10 20 20')
@@ -108,64 +177,6 @@ class Graph {
             .attr('orient', 'auto')
             .append('path')
             .attr('d', 'M-20,-10L0,0L-20,10');
-
-        // drag behavior
-        const graph = this;
-        this.drag = d3.drag()
-            .clickDistance(this.consts.CLICK_DISTANCE)
-            .on("start", (event, d) => {
-                if (graph.state.shiftNodeDrag) {
-                    // add arrow tip
-                    graph.dragLine.style('marker-end', 'url(#mark-end-arrow)');
-                }
-            })
-            .on("drag", function (event, d) {
-                if (graph.state.shiftNodeDrag) {
-                    const pos = d3.pointer(event, graph.plot.node());
-                    graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + pos[0] + ',' + pos[1]);
-                } else {
-                    d.x = event.x;
-                    d.y = event.y;
-                    d3.select(this).raise().attr("transform", d => "translate(" + [d.x, d.y] + ")");
-                    graph.updateEdges();
-                }
-            })
-            .on("end", (event, source) => {
-                this.state.shiftNodeDrag = false;
-                // hide line, remove arrow tip
-                this.dragLine.classed("hidden", true).style("marker-end", "none");
-
-                const target = this.state.mouseOverNode;
-
-                if (!source || !target) return;
-
-                // source and target are different
-                if (source !== target) {
-                    // remove edge between source and target (any order)
-                    this.edges = this.edges.filter(edge => {
-                        return !(edge.source === source && edge.target === target) &&
-                            !(edge.source === target && edge.target === source);
-                    });
-                    var newEdge = { source: source, target: target };
-                    this.edges.push(newEdge);
-                    this.updateEdges();
-                }
-            });
-
-        // populate svg
-        this.plot = svg.append('g');
-
-        // displayed when dragging between nodes
-        this.dragLine = this.plot.append('path')
-            .classed('edge', true)
-            .classed('hidden', true)
-            .attr('d', 'M0,0L0,0');
-
-        // circles need to be added last to be drawn above the paths
-        this.paths = this.plot.append('g').classed('edges', true);
-        this.circles = this.plot.append('g').classed('nodes', true);
-
-        this.update();
     }
 
     update() {
@@ -231,8 +242,7 @@ class Graph {
                         this.state.selectedEdge = d;
                         this.state.selectedNode = null;
                         this.update();
-                    })
-                    .style('marker-end', 'url(#end-arrow)'),
+                    }),
                 update => update.attr("d", d => {
                     return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
                 })
@@ -269,10 +279,10 @@ const graph = new Graph({
     ]
 })
 
-d3.select("#delete-graph").on("click", function () {
+d3.select("#delete-graph").on("click", () => {
     graph.clear();
 });
 
-d3.select("#download-input").on("click", function () {
+d3.select("#download-input").on("click", () => {
     saveAs(graph.serialize(), "dag-download.json");
 });
