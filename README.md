@@ -22,7 +22,6 @@ Reimplementation of [directed-graph-creator](https://github.com/cjrd/directed-gr
 ## TODO
 
 * Multiline node labels
-* Automatically adjust to viewport
 * Position editable edge labels
 * Test in different Browsers (so far only Firefox 82)
 

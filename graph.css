@@ -2,6 +2,10 @@ text {
     font-size: 18px;
 }
 
+svg {
+    border: 1px solid;
+}
+
 /* Nodes */
 
 g.node > circle {

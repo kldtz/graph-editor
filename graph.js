@@ -1,12 +1,12 @@
 class Graph {
     constructor(opts) {
+        this.svg = opts.svg;
         this.nodes = opts.nodes;
         // current id == maximum id
         this.nodeId = this.nodes.reduce((prev, curr) => {
             return (prev.id > curr.id) ? prev.id : curr.id
         });
         this.setEdges(opts.edges)
-        this.element = opts.element;
         this.state = {
             mouseOverNode: null,
             shiftNodeDrag: false,
@@ -35,9 +35,6 @@ class Graph {
     }
 
     draw() {
-        this.width = 1000;
-        this.height = 800;
-
         d3.select(window).on("keydown", (event) => {
             switch (event.keyCode) {
                 case this.consts.BACKSPACE_KEY:
@@ -57,11 +54,6 @@ class Graph {
                     break;
             }
         });
-
-        this.svg = this.element.append('svg')
-            .attr('width', this.width)
-            .attr('height', this.height)
-            .style("border", "solid 1px");
 
         // add zoom behavior to whole svg
         const zoom = d3.zoom()
@@ -404,7 +396,7 @@ class Graph {
 /* Main */
 
 const graph = new Graph({
-    element: d3.select("#graph"),
+    svg: d3.select("#graph"),
     nodes: [{ id: 1, title: "A", x: 250, y: 150 },
     { id: 2, title: "B", x: 800, y: 500 },
     { id: 3, title: "C", x: 200, y: 700 }],
