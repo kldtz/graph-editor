@@ -64,10 +64,13 @@ marker {
     fill: orange;
 }
 
+.edge:hover {
+    cursor: pointer;
+}
+
 .edge:hover .line {
     marker-end: url("#selected-end-arrow");
     stroke: orange;
-    cursor: pointer;
 }
 
 .edge:hover text {
