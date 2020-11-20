@@ -340,7 +340,6 @@ class Graph {
         });
         // hide current label
         const text = selection.selectAll("text").classed("hidden", true);
-        console.log(selection);
         // add intermediate editable paragraph
         const d3txt = this.plot.selectAll("foreignObject")
             .data([d])
@@ -357,7 +356,7 @@ class Graph {
             .attr("contentEditable", "true")
             .style("text-align", "center")
             //.style("border", "1px solid")
-            .text(d.title)
+            .text(d.label)
             .on("mousedown", (event, d) => {
                 event.stopPropagation();
             })
