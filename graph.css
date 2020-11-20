@@ -1,3 +1,7 @@
+text {
+    font-size: 18px;
+}
+
 /* Nodes */
 
 g.node > circle {
@@ -32,20 +36,24 @@ text.hidden {
 
 /* Edges */
 
-path.edge.hidden {
+path.line.hidden {
     stroke-width: 0;
     stroke: white;
 }
 
-path.edge {
+path.line {
     stroke: black;
     stroke-width: 6px;
     marker-end: url("#end-arrow")
 }
 
-path.edge.selected {
+.edge.selected > path {
     stroke: orange;
     marker-end: url("#selected-end-arrow");
+}
+
+.edge.selected > text {
+    fill: orange;
 }
 
 marker {
@@ -56,23 +64,27 @@ marker {
     fill: orange;
 }
 
-path.edge:hover {
+.edge:hover .line {
     marker-end: url("#selected-end-arrow");
     stroke: orange;
     cursor: pointer;
 }
 
+.edge:hover text {
+    fill: orange;
+}
+
 /* Intermediate edge during drag */
 
-path.edge.dragline {
+path.line.dragline {
     marker-end: url("#mark-end-arrow");
 }
 
-path.edge.dragline.hidden {
+path.line.dragline.hidden {
     marker-end: none;
 }
 
-path.edge.dragline:hover {
+path.line.dragline:hover {
     stroke: black;
     cursor: pointer;
 }

@@ -28,7 +28,8 @@ class Graph {
         this.edges = edges.map(e => {
             return {
                 source: this.nodes.find(n => n.id == e.source),
-                target: this.nodes.find(n => n.id == e.target)
+                target: this.nodes.find(n => n.id == e.target),
+                label: e.label
             }
         });
     }
@@ -129,7 +130,7 @@ class Graph {
 
         // displayed when dragging between nodes
         this.dragLine = this.plot.append('path')
-            .classed('edge', true)
+            .classed('line', true)
             .classed('dragline', true)
             .classed('hidden', true)
             .attr('d', 'M0,0L0,0');
@@ -279,27 +280,100 @@ class Graph {
 
     updateEdges() {
         this.paths.selectAll(".edge")
-            .data(this.edges, d => {
-                return String(d.source.id) + "+" + String(d.target.id);
-            })
+            .data(this.edges, this.edgeId)
             .join(
-                enter => enter.append("path")
-                    .classed("edge", true)
-                    .attr("d", d => {
-                        return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
-                    })
-                    .on("click", (event, d) => {
-                        event.stopPropagation();
-                        this.state.selectedEdge = d;
-                        this.state.selectedNode = null;
-                        this.update();
-                    }),
-                update => update.attr("d", d => {
-                    return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
-                })
-                    .classed("selected", d => { return d === this.state.selectedEdge; }),
+                enter => {
+                    const edges = enter.append("g")
+                        .classed("edge", true)
+                        .on("click", (event, d) => {
+                            event.stopPropagation();
+                            if (event.shiftKey) {
+                                this.editEdgeLabel(d);
+                            } else {
+                                this.state.selectedEdge = d;
+                                this.state.selectedNode = null;
+                                this.update();
+                            }
+                        })
+                        .on("mousedown", (event, d) => {
+                            event.stopPropagation();
+                        });
+
+                    edges.append("path")
+                        .attr("id", this.edgeId)
+                        .classed("line", true)
+                        .attr("d", d => {
+                            return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+                        });
+
+                    edges.append("text")
+                        .attr("class", "edge-label")
+                        .attr("dy", - 10)
+                        .attr("fill", "black")
+                        .append("textPath")
+                        .attr("xlink:href", d => "#" + this.edgeId(d))
+                        .attr("text-anchor", "middle")
+                        .attr("startOffset", "50%")
+                        .text(d => d.label);
+                },
+                update => {
+                    update.classed("selected", d => { return d === this.state.selectedEdge; });
+
+                    update.select("path")
+                        .attr("d", d => {
+                            return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+                        });
+
+                    update.select("text").select("textPath").text(d => d.label);
+                },
                 exit => exit.remove()
             );
+    }
+
+    edgeId(d) {
+        return String(d.source.id) + "+" + String(d.target.id);
+    }
+
+    editEdgeLabel(d) {
+        const selection = this.paths.selectAll('g').filter(dval => {
+            return this.edgeId(dval) === this.edgeId(d);
+        });
+        // hide current label
+        const text = selection.selectAll("text").classed("hidden", true);
+        console.log(selection);
+        // add intermediate editable paragraph
+        const d3txt = this.plot.selectAll("foreignObject")
+            .data([d])
+            .enter()
+            .append("foreignObject")
+            // TODO: middle position + rotate via transform: rotate(20deg);
+            .attr("x", d.target.x - (d.target.x - d.source.x) / 2)
+            .attr("y", d.target.y - (d.target.y - d.source.y) / 2)
+            .attr("height", 100)
+            .attr("width", 100)
+            .append("xhtml:div")
+            //.style("transform", "rotate(20deg)")
+            .attr("id", "editable-p")
+            .attr("contentEditable", "true")
+            .style("text-align", "center")
+            //.style("border", "1px solid")
+            .text(d.title)
+            .on("mousedown", (event, d) => {
+                event.stopPropagation();
+            })
+            .on("keydown", (event, d) => {
+                event.stopPropagation();
+                if (event.keyCode == this.consts.ENTER_KEY) {
+                    event.target.blur();
+                }
+            })
+            .on("blur", (event, d) => {
+                d.label = event.target.textContent;
+                d3.select(event.target.parentElement).remove();
+                this.updateEdges();
+                text.classed("hidden", false);
+            });
+        d3txt.node().focus();
     }
 
     clear() {
@@ -336,8 +410,8 @@ const graph = new Graph({
     { id: 2, title: "B", x: 800, y: 500 },
     { id: 3, title: "C", x: 200, y: 700 }],
     edges: [
-        { source: 1, target: 2 },
-        { source: 2, target: 3 }
+        { source: 1, target: 2, label: "Hello" },
+        { source: 2, target: 3, label: "World!" }
     ]
 })
 
