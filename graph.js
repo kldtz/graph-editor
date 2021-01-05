@@ -3,9 +3,9 @@ class Graph {
         this.svg = opts.svg;
         this.nodes = opts.nodes;
         // current id == maximum id
-        this.nodeId = this.nodes.reduce((prev, curr) => {
-            return (prev.id > curr.id) ? prev.id : curr.id
-        });
+        this.nodeId = this.nodes.reduce((acc, curr) => {
+            return (acc > curr.id) ? acc : curr.id;
+        }, 0);
         this.setEdges(opts.edges)
         this.state = {
             mouseOverNode: null,
