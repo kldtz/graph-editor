@@ -1,5 +1,6 @@
 text {
-    font-size: 18px;
+    font-size: 30px;
+    fill: var(--text-color);
 }
 
 svg {
@@ -9,13 +10,14 @@ svg {
 /* Nodes */
 
 g.node > circle {
-    stroke: black;
-    fill: white;
+    stroke: var(--text-color);
+    fill: var(--background-color);
     stroke-width: 2px;
 }
 
 g.node > text {
     text-anchor: middle;
+    dominant-baseline: middle;
 }
 
 g.node:hover {
@@ -30,8 +32,16 @@ g.node.selected > marker {
     fill: orange;
 }
 
+g.node.selected > text {
+    fill: black;
+}
+
 g.node:hover > circle {
     fill: orange;
+}
+
+g.node:hover > text {
+    fill: black;
 }
 
 text.hidden {
@@ -42,11 +52,11 @@ text.hidden {
 
 path.line.hidden {
     stroke-width: 0;
-    stroke: white;
+    stroke: var(--background-color);
 }
 
 path.line {
-    stroke: black;
+    stroke: var(--text-color);
     stroke-width: 6px;
     marker-end: url("#end-arrow")
 }
@@ -61,7 +71,7 @@ path.line {
 }
 
 marker {
-    fill: black;
+    fill: var(--text-color);
 }
 
 #selected-end-arrow {
@@ -92,38 +102,6 @@ path.line.dragline.hidden {
 }
 
 path.line.dragline:hover {
-    stroke: black;
+    stroke: var(--text-color);
     cursor: pointer;
-}
-
-/* Toolbar */
-
-#toolbox {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    margin-bottom: 0.5em;
-    margin-left: 1em;
-    border: 2px solid #EEEEEE;
-    border-radius: 5px;
-    padding: 1em;
-    z-index: 5;
-}
-
-#toolbox input {
-    width: 30px;
-    opacity: 0.4;
-}
-
-#toolbox input:hover {
-    opacity: 1;
-    cursor: pointer;
-}
-
-#select-file {
-    display: none;
-}
-
-#download-input {
-    margin: 0 0.5em;
 }

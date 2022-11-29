@@ -217,7 +217,6 @@ class Graph {
                         .attr("r", String(this.consts.NODE_RADIUS));
 
                     nodes.append("text")
-                        .attr("dy", 5)
                         .text(d => { return d.title; });
                 },
                 update => {
@@ -300,8 +299,7 @@ class Graph {
 
                     edges.append("text")
                         .attr("class", "edge-label")
-                        .attr("dy", - 10)
-                        .attr("fill", "black")
+                        .attr("dy", - 15)
                         .append("textPath")
                         .attr("xlink:href", d => "#" + this.edgeId(d))
                         .attr("text-anchor", "middle")
