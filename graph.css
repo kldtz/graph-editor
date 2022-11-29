@@ -78,6 +78,10 @@ marker {
     fill: orange;
 }
 
+#selected-end-arrow > path {
+    stroke: orange;
+}
+
 .edge:hover {
     cursor: pointer;
 }
