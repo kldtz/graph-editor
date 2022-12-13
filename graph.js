@@ -242,7 +242,7 @@ class Graph {
             .enter()
             .append("foreignObject")
             .attr("x", d.x - this.consts.NODE_RADIUS)
-            .attr("y", d.y - 13)
+            .attr("y", d.y - this.consts.NODE_RADIUS/2)
             .attr("height", 2 * this.consts.NODE_RADIUS)
             .attr("width", 2 * this.consts.NODE_RADIUS)
             .append("xhtml:div")

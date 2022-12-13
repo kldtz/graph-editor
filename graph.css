@@ -3,6 +3,10 @@ text {
     fill: var(--text-color);
 }
 
+foreignObject {
+    font-size: 30px;
+}
+
 svg {
     border: 1px solid;
 }
