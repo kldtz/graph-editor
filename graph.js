@@ -385,7 +385,7 @@ class Graph {
 
     serialize() {
         const saveEdges = this.edges.map(edge => {
-            return { source: edge.source.id, target: edge.target.id };
+            return { source: edge.source.id, target: edge.target.id, label: edge.label };
         });
         return new window.Blob([window.JSON.stringify({ "nodes": this.nodes, "edges": saveEdges })], { type: "text/plain;charset=utf-8" });
     }
