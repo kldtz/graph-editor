@@ -2,11 +2,11 @@ class Graph {
     constructor(opts) {
         this.svg = opts.svg;
         this.nodes = opts.nodes;
+        this.edges = this.mapEdges(opts.edges);
         // current id == maximum id
         this.nodeId = this.nodes.reduce((acc, curr) => {
             return (acc > curr.id) ? acc : curr.id;
         }, 0);
-        this.setEdges(opts.edges)
         this.state = {
             mouseOverNode: null,
             shiftNodeDrag: false,
@@ -23,9 +23,9 @@ class Graph {
         this.draw();
     }
 
-    setEdges(edges) {
+    mapEdges(edges) {
         // map source and target id to respective node
-        this.edges = edges.map(e => {
+        return edges.map(e => {
             return {
                 source: this.nodes.find(n => n.id == e.source),
                 target: this.nodes.find(n => n.id == e.target),
