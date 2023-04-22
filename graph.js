@@ -2,7 +2,7 @@ class Graph {
   constructor(opts) {
     this.svg = opts.svg;
     this.nodes = opts.nodes;
-    this.edges = this.mapEdges(opts.edges);
+    this.edges = this.#mapEdges(opts.edges);
     // current id == maximum id
     this.nodeId = this.nodes.reduce(
       (acc, curr) => (acc > curr.id ? acc : curr.id),
@@ -21,10 +21,10 @@ class Graph {
       CLICK_DISTANCE: 5,
       ENTER_KEY: 13,
     };
-    this.draw();
+    this.#draw();
   }
 
-  mapEdges(edges) {
+  #mapEdges(edges) {
     // map source and target id to respective node
     return edges.map((e) => ({
       source: this.nodes.find((n) => n.id == e.source),
@@ -63,7 +63,7 @@ class Graph {
     this.redrawNodes();
   }
 
-  draw() {
+  #draw() {
     d3.select(window).on("keydown", (event) => {
       switch (event.keyCode) {
         case this.consts.BACKSPACE_KEY:
@@ -101,7 +101,7 @@ class Graph {
       })
       .call(zoom);
 
-    this.defineMarkers();
+    this.#defineMarkers();
 
     // drag behavior
     const graph = this;
@@ -167,7 +167,7 @@ class Graph {
     this.redraw();
   }
 
-  defineMarkers() {
+  #defineMarkers() {
     const defs = this.svg.append("defs");
     // arrow marker for edge
     defs
@@ -223,13 +223,13 @@ class Graph {
       .selectAll("g")
       .data(this.nodes, (d) => d.id)
       .join(
-        (enter) => this.enterNodes(enter),
-        (update) => this.updateNodes(update),
+        (enter) => this.#enterNodes(enter),
+        (update) => this.#updateNodes(update),
         (exit) => exit.remove()
       );
   }
 
-  enterNodes(enter) {
+  #enterNodes(enter) {
     const nodes = enter
       .append("g")
       .attr("class", "node")
@@ -252,7 +252,7 @@ class Graph {
       .on("click", (event, d) => {
         event.stopPropagation();
         if (event.shiftKey) {
-          this.editNodeLabel(d);
+          this.#editNodeLabel(d);
         } else {
           this.state.selectedNode = d;
           this.state.selectedEdge = null;
@@ -265,7 +265,7 @@ class Graph {
     nodes.append("text").text((d) => d.title);
   }
 
-  editNodeLabel(d) {
+  #editNodeLabel(d) {
     const selection = this.circles
       .selectAll("g")
       .filter((dval) => dval.id === d.id);
@@ -305,7 +305,7 @@ class Graph {
     d3txt.node().focus();
   }
 
-  updateNodes(update) {
+  #updateNodes(update) {
     update
       .attr("transform", (d) => "translate(" + d.x + "," + d.y + ")")
       .classed("selected", (d) => d === this.state.selectedNode);
@@ -316,22 +316,22 @@ class Graph {
   redrawEdges() {
     this.paths
       .selectAll(".edge")
-      .data(this.edges, this.edgeId)
+      .data(this.edges, this.#edgeId)
       .join(
-        (enter) => this.enterEdges(enter),
-        (update) => this.updateEdges(update),
+        (enter) => this.#enterEdges(enter),
+        (update) => this.#updateEdges(update),
         (exit) => exit.remove()
       );
   }
 
-  enterEdges(enter) {
+  #enterEdges(enter) {
     const edges = enter
       .append("g")
       .classed("edge", true)
       .on("click", (event, d) => {
         event.stopPropagation();
         if (event.shiftKey) {
-          this.editEdgeLabel(d);
+          this.#editEdgeLabel(d);
         } else {
           this.state.selectedEdge = d;
           this.state.selectedNode = null;
@@ -344,7 +344,7 @@ class Graph {
 
     edges
       .append("path")
-      .attr("id", this.edgeId)
+      .attr("id", this.#edgeId)
       .classed("line", true)
       .attr(
         "d",
@@ -356,16 +356,16 @@ class Graph {
       .attr("class", "edge-label")
       .attr("dy", -15)
       .append("textPath")
-      .attr("xlink:href", (d) => "#" + this.edgeId(d))
+      .attr("xlink:href", (d) => "#" + this.#edgeId(d))
       .attr("text-anchor", "middle")
       .attr("startOffset", "50%")
       .text((d) => d.label);
   }
 
-  editEdgeLabel(d) {
+  #editEdgeLabel(d) {
     const selection = this.paths
       .selectAll("g")
-      .filter((dval) => this.edgeId(dval) === this.edgeId(d));
+      .filter((dval) => this.#edgeId(dval) === this.#edgeId(d));
     // hide current label
     const text = selection.selectAll("text").classed("hidden", true);
     // add intermediate editable paragraph
@@ -404,7 +404,7 @@ class Graph {
     d3txt.node().focus();
   }
 
-  updateEdges(update) {
+  #updateEdges(update) {
     update.classed("selected", (d) => d === this.state.selectedEdge);
 
     update
@@ -420,7 +420,7 @@ class Graph {
       .text((d) => d.label);
   }
 
-  edgeId(d) {
+  #edgeId(d) {
     return String(d.source.id) + "+" + String(d.target.id);
   }
 
@@ -440,7 +440,7 @@ class Graph {
       prev.id > curr.id ? prev.id : curr.id
     );
     this.nodes = nodes;
-    this.edges = this.mapEdges(edges);
+    this.edges = this.#mapEdges(edges);
     this.redraw();
   }
 
