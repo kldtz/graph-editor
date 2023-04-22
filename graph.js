@@ -379,7 +379,7 @@ class Graph {
             return (prev.id > curr.id) ? prev.id : curr.id
         });
         this.nodes = nodes;
-        this.setEdges(edges);
+        this.edges = this.mapEdges(edges);
         this.update();
     }
 
