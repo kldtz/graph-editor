@@ -2,7 +2,7 @@
 
 Reimplementation of [directed-graph-creator](https://github.com/cjrd/directed-graph-creator) with [D3](https://d3js.org/) v6 and a few improvements.
 
-Demo: https://verzettelung.com/20/11/21/
+Demo: https://zeitbach.com/projects/visual-graph-editor/
 
 ## Usage
 
