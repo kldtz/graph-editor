@@ -2,8 +2,6 @@
 
 Reimplementation of [directed-graph-creator](https://github.com/cjrd/directed-graph-creator) with [D3](https://d3js.org/) v6 and a few improvements.
 
-Demo: https://zeitbach.com/projects/visual-graph-editor/
-
 ## Usage
 
 * Scroll to zoom in or out
